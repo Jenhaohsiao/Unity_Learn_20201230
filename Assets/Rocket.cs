@@ -40,6 +40,12 @@ public class Rocket : MonoBehaviour
             case "dead":
                 print("Dead");
                 break;
+            case "ground":
+                print("ground");
+                break;
+            case "Finish":
+                print("Finish");
+                break;
         }
     }
 
