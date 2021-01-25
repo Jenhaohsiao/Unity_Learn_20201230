@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class Rocket : MonoBehaviour
 {
@@ -39,12 +37,14 @@ public class Rocket : MonoBehaviour
                 break;
             case "dead":
                 print("Dead");
+                SceneManager.LoadScene(0);
                 break;
             case "ground":
                 print("ground");
                 break;
             case "Finish":
-                print("Finish");
+                print("Hit Finish");
+                SceneManager.LoadScene(1);
                 break;
         }
     }
