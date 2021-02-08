@@ -6,14 +6,22 @@ public class Rocket : MonoBehaviour
 
     [SerializeField] float rcsThrust = 100f;
     [SerializeField] float mainThrust = 100f;
+    [SerializeField] AudioClip mainEngine;
+    [SerializeField] AudioClip success;
+    [SerializeField] AudioClip death;
+
     Rigidbody rigidbody;
-    AudioSource m_MyAudioSource;
+    AudioSource audioSource;
+
+    enum State { Alive, Dying, Transcending };
+    State state = State.Alive;
 
 
     void Start()
     {
+        //todo: shomewhere stop sound onn death
         rigidbody = GetComponent<Rigidbody>();
-        m_MyAudioSource = GetComponent<AudioSource>();
+        audioSource = GetComponent<AudioSource>();
         rigidbody.mass = 0.08f;
 
     }
@@ -21,12 +29,22 @@ public class Rocket : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        Rotate();
-        Thrust();
+        if(state == State.Alive)
+        {
+            Rotate();
+            Thrust();
+        }
+       
     }
 
     void OnCollisionEnter(Collision collision)
     {
+
+        if(state != State.Alive)
+        {
+            return;
+        };
+
         switch (collision.gameObject.tag)
         {
             case "Friendly":
@@ -35,35 +53,56 @@ public class Rocket : MonoBehaviour
             case "ok":
                 print("OK");
                 break;
-            case "dead":
-                print("Dead");
-                SceneManager.LoadScene(0);
-                break;
+
             case "ground":
                 print("ground");
                 break;
             case "Finish":
-                print("Hit Finish");
-                SceneManager.LoadScene(1);
+                state = State.Transcending;
+                Invoke("LoadNextLevel", 1f);
+                LoadNextLevel();
+                break;
+            default:
+                print("Hit something deadly");
+                state = State.Dying;
+                LoadFirstLevel();
+                 Invoke("LoadFirstLevel", 1f);
                 break;
         }
+    }
+
+    private  void LoadFirstLevel()
+    {
+        print("Load fiirst level");
+        SceneManager.LoadScene(0);
+    }
+
+    private void LoadNextLevel()
+    {
+        //Todo: allow foor moore thann 2 levels;
+        SceneManager.LoadScene(1);
+
     }
 
     private void Thrust()
     {
         if (Input.GetKey(KeyCode.Space)) // can thrust while rotating
         {
-            rigidbody.AddRelativeForce(Vector3.up);
-            if (!m_MyAudioSource.isPlaying)
-            {
-                m_MyAudioSource.Play();
-            }
-
+            ApplyThrust();
 
         }
         else
         {
-            m_MyAudioSource.Stop();
+            audioSource.Stop();
+        }
+    }
+
+    private void ApplyThrust()
+    {
+        rigidbody.AddRelativeForce(Vector3.up);
+        if (!audioSource.isPlaying)
+        {
+            audioSource.PlayOneShot(mainEngine);
         }
     }
 
