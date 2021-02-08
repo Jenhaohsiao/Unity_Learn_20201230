@@ -29,18 +29,19 @@ public class Rocket : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(state == State.Alive)
+        if (state == State.Alive)
         {
-            Rotate();
-            Thrust();
+            RespondToThrustInput();
+            RespondToRotateInput();
+
         }
-       
+
     }
 
     void OnCollisionEnter(Collision collision)
     {
 
-        if(state != State.Alive)
+        if (state != State.Alive)
         {
             return;
         };
@@ -58,20 +59,32 @@ public class Rocket : MonoBehaviour
                 print("ground");
                 break;
             case "Finish":
-                state = State.Transcending;
-                Invoke("LoadNextLevel", 1f);
-                LoadNextLevel();
+                StartSuccessSequence();
                 break;
             default:
-                print("Hit something deadly");
-                state = State.Dying;
-                LoadFirstLevel();
-                 Invoke("LoadFirstLevel", 1f);
+                StartDeathSequence();
                 break;
         }
     }
 
-    private  void LoadFirstLevel()
+    private void StartDeathSequence()
+    {
+        print("Hit something deadly");
+        state = State.Dying;
+        audioSource.Stop();
+        audioSource.PlayOneShot(death);
+        Invoke("LoadFirstLevel", 1f);
+    }
+
+    private void StartSuccessSequence()
+    {
+        state = State.Transcending;
+        audioSource.Stop();
+        audioSource.PlayOneShot(success);
+        Invoke("LoadNextLevel", 1f);
+    }
+
+    private void LoadFirstLevel()
     {
         print("Load fiirst level");
         SceneManager.LoadScene(0);
@@ -84,7 +97,7 @@ public class Rocket : MonoBehaviour
 
     }
 
-    private void Thrust()
+    private void RespondToThrustInput()
     {
         if (Input.GetKey(KeyCode.Space)) // can thrust while rotating
         {
@@ -106,7 +119,7 @@ public class Rocket : MonoBehaviour
         }
     }
 
-    void Rotate()
+    void RespondToRotateInput()
     {
 
         rigidbody.freezeRotation = true;
