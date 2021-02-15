@@ -6,10 +6,18 @@ public class Rocket : MonoBehaviour
 
     [SerializeField] float rcsThrust = 100f;
     [SerializeField] float mainThrust = 100f;
+    [SerializeField] float levelLoadDelay = 2f; 
+
+
     [SerializeField] AudioClip mainEngine;
     [SerializeField] AudioClip success;
     [SerializeField] AudioClip death;
 
+    [SerializeField] ParticleSystem mainEngineParticle;
+    [SerializeField] ParticleSystem successParticle;
+    [SerializeField] ParticleSystem deathParticle;
+
+     
     Rigidbody rigidbody;
     AudioSource audioSource;
 
@@ -18,8 +26,7 @@ public class Rocket : MonoBehaviour
 
 
     void Start()
-    {
-        //todo: shomewhere stop sound onn death
+    { 
         rigidbody = GetComponent<Rigidbody>();
         audioSource = GetComponent<AudioSource>();
         rigidbody.mass = 0.08f;
@@ -67,22 +74,26 @@ public class Rocket : MonoBehaviour
         }
     }
 
+  
+    private void StartSuccessSequence()
+    {
+        state = State.Transcending;
+        audioSource.Stop();
+        audioSource.PlayOneShot(success);
+        successParticle.Play();
+        Invoke("LoadNextLevel", levelLoadDelay);
+    }
+
     private void StartDeathSequence()
     {
         print("Hit something deadly");
         state = State.Dying;
         audioSource.Stop();
         audioSource.PlayOneShot(death);
-        Invoke("LoadFirstLevel", 1f);
+        deathParticle.Play();
+        Invoke("LoadFirstLevel", levelLoadDelay);
     }
 
-    private void StartSuccessSequence()
-    {
-        state = State.Transcending;
-        audioSource.Stop();
-        audioSource.PlayOneShot(success);
-        Invoke("LoadNextLevel", 1f);
-    }
 
     private void LoadFirstLevel()
     {
@@ -107,16 +118,19 @@ public class Rocket : MonoBehaviour
         else
         {
             audioSource.Stop();
+            mainEngineParticle.Stop();
         }
     }
 
     private void ApplyThrust()
     {
-        rigidbody.AddRelativeForce(Vector3.up);
+        rigidbody.AddRelativeForce(Vector3.up * mainThrust * Time.deltaTime);
         if (!audioSource.isPlaying)
         {
             audioSource.PlayOneShot(mainEngine);
         }
+
+        mainEngineParticle.Play();
     }
 
     void RespondToRotateInput()
